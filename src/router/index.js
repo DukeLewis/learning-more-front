@@ -46,7 +46,23 @@ export const constantRoutes = [
 
   {
     path: '/',
-    component: Layout
+    component: Layout,
+    name: 'Dashboard',
+    meta: { title: '导航栏', icon: 'dashboard' },
+    children: [
+      {
+        path: '',
+        name: 'Home',
+        component: () => import('@/views/home/index'),
+        meta: { title: '首页', icon: 'dashboard' }
+      },
+      {
+        path: '/student',
+        name: 'Student',
+        component: () => import('@/views/student/index'),
+        meta: { title: '学生管理', icon: 'el-icon-user' }
+      }
+    ]
   },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }

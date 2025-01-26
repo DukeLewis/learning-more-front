@@ -10,7 +10,7 @@ export default {
     this.fixBugIniOS()
   },
   methods: {
-    fixBugIinOS() {
+    fixBugIniOS() {
       const $subMenu = this.$refs.subMenu
       if ($subMenu) {
         const handleMouseleave = $subMenu.handleMouseleave
