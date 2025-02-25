@@ -61,6 +61,27 @@ export const constantRoutes = [
         name: 'Student',
         component: () => import('@/views/student/index'),
         meta: { title: '学生管理', icon: 'el-icon-user' }
+      },
+      {
+        path: '/lesson',
+        name: 'Lesson',
+        component: () => import('@/views/lesson/index'),
+        meta: { title: '课程管理', icon: 'el-icon-s-grid' }
+      },
+      {
+        path: '/lesson/:id',
+        name: 'LessonDetail',
+        component: () => import('@/views/lesson/LessonDetail.vue')
+      },
+      {
+        path: '/lesson/edit/:id',
+        name: 'LessonEdit',
+        component: () => import('@/views/lesson/LessonEdit.vue')
+      },
+      {
+        path: '/lesson/create',
+        name: 'LessonCreate',
+        component: () => import('@/views/lesson/LessonEdit.vue')
       }
     ]
   },

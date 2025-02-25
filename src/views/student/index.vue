@@ -20,6 +20,9 @@
         <el-table-column label="班级" prop="className" align="center" />
         <el-table-column label="操作" align="center" width="230">
           <template slot-scope="{row}">
+            <el-button type="info" size="mini" @click="handlePreview(row)">
+              查看
+            </el-button>
             <el-button type="primary" size="mini" @click="handleUpdate(row)">
               编辑
             </el-button>
@@ -150,6 +153,8 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
+    handlePreview(row) {
+    },
     updateData() {
       this.$refs['dataForm'].validate(valid => {
         if (valid) {
@@ -168,7 +173,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        Student.deleteStudent(row.id).then(() => {
+        Student.deleteStudent({ studentId: row.id }).then(() => {
           this.getList()
           this.$message.success('删除成功')
         })

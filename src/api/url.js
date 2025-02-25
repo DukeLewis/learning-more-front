@@ -16,5 +16,10 @@ export const url = {
     createStudent: '/api/student/createStudent',
     deleteStudent: '/api/student/deleteStudent',
     updateStudent: '/api/student/updateStudent'
+  },
+  Course: {
+    listCourseOverviewPage: '/api/course/listCourseOverviewPage',
+    getCourseDetail: '/api/course/getCourseDetail',
+    deleteCourse: '/api/course/deleteCourse'
   }
 }
