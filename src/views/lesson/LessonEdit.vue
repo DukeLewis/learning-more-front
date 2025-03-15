@@ -1,7 +1,37 @@
 <template>
   <div class="lesson-edit">
+    <!-- 顶部操作栏 -->
     <div class="header">
-      <h1>{{ isEdit ? '编辑课程' : '创建课程' }}</h1>
+      <div class="title">
+        <h1>{{ isEdit ? '编辑课程' : '创建课程' }}</h1>
+        <template v-if="hasBasicInfo">
+          <el-tooltip content="重新生成整个课程的目标和活动" placement="right">
+            <el-button
+              type="success"
+              icon="el-icon-magic-stick"
+              @click="handleRegenerateAll"
+              :loading="regenerating"
+              class="regenerate-btn"
+            >
+              AI 重新生成
+            </el-button>
+          </el-tooltip>
+        </template>
+        <template v-else>
+          <el-tooltip content="基于年龄和人数生成课程基本信息" placement="right">
+            <el-button
+              type="success"
+              icon="el-icon-magic-stick"
+              @click="handleGenerateBasicInfo"
+              :loading="generatingBasicInfo"
+              class="regenerate-btn"
+              :disabled="!canGenerateBasicInfo"
+            >
+              AI 生成基本信息
+            </el-button>
+          </el-tooltip>
+        </template>
+      </div>
     </div>
 
     <el-steps :active="activeStep" finish-status="success" class="steps">
@@ -66,8 +96,27 @@
       </el-form-item>
     </el-form>
 
-    <!-- 课程目标表单 -->
+    <!-- 课程目标部分 -->
     <div v-show="activeStep === 1" class="form-container">
+      <div class="section-header">
+        <div class="left">
+          <h3>课程目标</h3>
+          <el-tooltip content="基于课程信息自动生成教学目标" placement="right">
+            <el-button
+              type="success"
+              icon="el-icon-magic-stick"
+              @click="handleGenerateObjectives"
+              :loading="generatingObjectives"
+              size="small"
+            >
+              AI 生成目标
+            </el-button>
+          </el-tooltip>
+        </div>
+        <el-button type="primary" plain @click="addObjective" icon="el-icon-plus" size="small">
+          手动添加目标
+        </el-button>
+      </div>
       <div class="objectives-list">
         <div
           v-for="(objective, index) in courseForm.objectives"
@@ -105,13 +154,29 @@
           </el-card>
         </div>
       </div>
-      <el-button type="primary" plain @click="addObjective" icon="el-icon-plus">
-        添加课程目标
-      </el-button>
     </div>
 
-    <!-- 课程活动表单 -->
+    <!-- 课程活动部分 -->
     <div v-show="activeStep === 2" class="form-container">
+      <div class="section-header">
+        <div class="left">
+          <h3>课程活动</h3>
+          <el-tooltip content="基于课程目标自动生成教学活动" placement="right">
+            <el-button
+              type="success"
+              icon="el-icon-magic-stick"
+              @click="handleGenerateActivities"
+              :loading="generatingActivities"
+              size="small"
+            >
+              AI 生成活动
+            </el-button>
+          </el-tooltip>
+        </div>
+        <el-button type="primary" plain @click="addActivity" icon="el-icon-plus" size="small">
+          手动添加活动
+        </el-button>
+      </div>
       <div class="activities-list">
         <div
           v-for="(activity, index) in courseForm.activities"
@@ -271,9 +336,6 @@
           </el-card>
         </div>
       </div>
-      <el-button type="primary" plain @click="addActivity" icon="el-icon-plus">
-        添加课程活动
-      </el-button>
     </div>
 
     <!-- 底部按钮 -->
@@ -300,6 +362,9 @@
 
 <script>
 import { Course } from '@/api/Course'
+import { createEventSource } from '@/utils/eventSource'
+import { url } from '@/api/url'
+import { assignProperties } from '@/utils/StrUtil'
 
 export default {
   name: 'LessonEdit',
@@ -308,6 +373,11 @@ export default {
       isEdit: false,
       activeStep: 0,
       submitting: false,
+      regenerating: false,
+      generatingObjectives: false,
+      generatingActivities: false,
+      generatingBasicInfo: false,
+      generateBasicInfoData: '',
       courseForm: {
         courseName: '',
         ageGroup: '',
@@ -342,6 +412,17 @@ export default {
           { min: 10, message: '课程描述不能少于10个字符', trigger: 'blur' }
         ]
       }
+    }
+  },
+  computed: {
+    hasBasicInfo() {
+      return this.courseForm.courseName &&
+        this.courseForm.courseDescription &&
+        this.courseForm.totalSessions > 0
+    },
+    canGenerateBasicInfo() {
+      return this.courseForm.ageGroup &&
+        this.courseForm.maxStudents > 0
     }
   },
   created() {
@@ -501,6 +582,87 @@ export default {
       } finally {
         this.submitting = false
       }
+    },
+    async handleRegenerateAll() {
+      // try {
+      //   this.regenerating = true
+      //   const response = await Course.regenerateAll(this.$route.params.id)
+      //   this.courseForm = response
+      //   this.$message.success('课程重新生成成功')
+      // } catch (error) {
+      //   this.$message.error('重新生成课程失败：' + error.message)
+      // } finally {
+      //   this.regenerating = false
+      // }
+    },
+    async handleGenerateObjectives() {
+      try {
+        this.generatingObjectives = true
+        const response = await Course.generateObjectives(this.$route.params.id)
+        this.courseForm.objectives = response
+        this.$message.success('课程目标生成成功')
+      } catch (error) {
+        this.$message.error('生成课程目标失败：' + error.message)
+      } finally {
+        this.generatingObjectives = false
+      }
+    },
+    async handleGenerateActivities() {
+      // try {
+      //   this.generatingActivities = true
+      //   const response = await Course.generateActivities(this.$route.params.id)
+      //   this.courseForm.activities = response
+      //   this.$message.success('课程活动生成成功')
+      // } catch (error) {
+      //   this.$message.error('生成课程活动失败：' + error.message)
+      // } finally {
+      //   this.generatingActivities = false
+      // }
+    },
+    handleGenerateBasicInfo() {
+      if (!this.courseForm.ageGroup || !this.courseForm.maxStudents) {
+        this.$message.warning('请先填写适用年龄和最多学生数')
+        return
+      }
+
+      try {
+        this.generatingBasicInfo = true
+        const data = {
+          ageRange: this.courseForm.ageGroup,
+          maxStudents: this.courseForm.maxStudents
+        }
+        const messageCallBack = (message) => {
+          // 更新数据
+          this.generateBasicInfoData += message.data
+          // 解析数据
+          const parseData = assignProperties([
+            { sourceKey: 'name', targetProp: 'courseName' },
+            { sourceKey: 'total session', targetProp: 'totalSessions' },
+            { sourceKey: 'description', targetProp: 'courseDescription' },
+            { sourceKey: 'start time', targetProp: 'startTime' },
+            { sourceKey: 'end time', targetProp: 'endTime' }
+          ], this.generateBasicInfoData)
+          this.courseForm = {
+            ...this.courseForm,
+            ...parseData,
+            coursePeriod: [parseData.startTime, parseData.endTime]
+          }
+        }
+        createEventSource(url.Course.generateCourseBaseInfo, data, messageCallBack)
+          .then(res => {
+            // 保存课程基本信息
+            // 生成结束
+            this.$message.success('基本信息已生成')
+          })
+          .catch(err => {
+            // 生成出错
+            console.log(err)
+          })
+      } catch (error) {
+        this.$message.error('生成失败：' + error.message)
+      } finally {
+        this.generatingBasicInfo = false
+      }
     }
   }
 }
@@ -515,14 +677,41 @@ export default {
   .header {
     margin-bottom: 30px;
 
-    h1 {
-      margin: 0;
-      color: #303133;
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      h1 {
+        margin: 0;
+        color: #303133;
+      }
+
+      .regenerate-btn {
+        margin-left: 16px;
+      }
     }
   }
 
-  .steps {
-    margin-bottom: 30px;
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #EBEEF5;
+
+    .left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      h3 {
+        margin: 0;
+        color: #303133;
+        font-size: 18px;
+      }
+    }
   }
 
   .form-container {
@@ -530,6 +719,7 @@ export default {
     padding: 20px;
     border-radius: 4px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
   }
 
   .objectives-list,

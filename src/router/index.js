@@ -82,6 +82,12 @@ export const constantRoutes = [
         path: '/lesson/create',
         name: 'LessonCreate',
         component: () => import('@/views/lesson/LessonEdit.vue')
+      },
+      {
+        path: '/school',
+        name: 'School',
+        component: () => import('@/views/school/index'),
+        meta: { title: '学校信息管理', icon: 'el-icon-s-grid' }
       }
     ]
   },

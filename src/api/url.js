@@ -1,5 +1,6 @@
 
 export const url = {
+  serverlessApiUrl: 'http://localhost:8090',
   User: {
     login: '/user/login',
     register: '/user/register'
@@ -20,6 +21,13 @@ export const url = {
   Course: {
     listCourseOverviewPage: '/api/course/listCourseOverviewPage',
     getCourseDetail: '/api/course/getCourseDetail',
-    deleteCourse: '/api/course/deleteCourse'
+    deleteCourse: '/api/course/deleteCourse',
+    generateCourseBaseInfo: '/api/course/generateCourseBaseInfo'
+  },
+  School: {
+    listSchoolOverviewPage: '/api/school/listSchoolOverviewPage',
+    getSchoolInfo: '/api/school/getSchoolInfo',
+    deleteSchool: '/api/school/deleteSchool',
+    updateSchoolInfo: '/api/school/updateSchoolInfo'
   }
 }
