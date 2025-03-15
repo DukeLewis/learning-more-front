@@ -15,19 +15,19 @@ export default {
       },
       schoolForm: {
         name: '',
-        address: '',
-        studentCount: 0
+        position: '',
+        quantity: 0
       },
       rules: {
         name: [
           { required: true, message: '请输入学校名称', trigger: 'blur' },
           { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
         ],
-        address: [
+        position: [
           { required: true, message: '请输入学校地址', trigger: 'blur' },
           { min: 5, max: 200, message: '长度在 5 到 200 个字符', trigger: 'blur' }
         ],
-        studentCount: [
+        quantity: [
           { required: true, message: '请输入学生人数', trigger: 'blur' },
           { type: 'number', min: 0, message: '学生人数必须大于等于0', trigger: 'blur' }
         ]
@@ -80,9 +80,9 @@ export default {
           type: 'warning'
         })
         // 这里调用删除学校的 API
-        // await deleteSchool(row.id)
+        await School.deleteSchool({ schoolId: row.id})
         this.$message.success('删除成功')
-        this.fetchSchoolList()
+        await this.fetchSchoolList()
       } catch (error) {
         if (error !== 'cancel') {
           this.$message.error('删除失败：' + error.message)
@@ -95,14 +95,14 @@ export default {
         this.submitting = true
         if (this.isEdit) {
           // 调用编辑 API
-          // await updateSchool(this.schoolForm)
+          await School.updateSchool({ ...this.schoolForm })
         } else {
           // 调用创建 API
-          // await createSchool(this.schoolForm)
+          await School.createSchool({ ...this.schoolForm })
         }
         this.$message.success(this.isEdit ? '编辑成功' : '创建成功')
         this.dialogVisible = false
-        this.fetchSchoolList()
+        await this.fetchSchoolList()
       } catch (error) {
         if (error !== false) {
           this.$message.error((this.isEdit ? '编辑' : '创建') + '失败：' + error.message)
@@ -115,8 +115,8 @@ export default {
       this.$refs.schoolForm?.resetFields()
       this.schoolForm = {
         name: '',
-        address: '',
-        studentCount: 0
+        position: '',
+        quantity: 0
       }
     },
     handleSearch() {
@@ -244,12 +244,12 @@ export default {
         <el-form-item label="学校名称" prop="name">
           <el-input v-model="schoolForm.name" placeholder="请输入学校名称"/>
         </el-form-item>
-        <el-form-item label="学校地址" prop="address">
-          <el-input v-model="schoolForm.address" placeholder="请输入学校地址"/>
+        <el-form-item label="学校地址" prop="position">
+          <el-input v-model="schoolForm.position" placeholder="请输入学校地址"/>
         </el-form-item>
-        <el-form-item label="学生人数" prop="studentCount">
+        <el-form-item label="学生人数" prop="quantity">
           <el-input-number
-            v-model="schoolForm.studentCount"
+            v-model="schoolForm.quantity"
             :min="0"
             :precision="0"
             :step="1"

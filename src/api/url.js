@@ -26,8 +26,8 @@ export const url = {
   },
   School: {
     listSchoolOverviewPage: '/api/school/listSchoolOverviewPage',
-    getSchoolInfo: '/api/school/getSchoolInfo',
+    createSchool: '/api/school/createSchool',
     deleteSchool: '/api/school/deleteSchool',
-    updateSchoolInfo: '/api/school/updateSchoolInfo'
+    updateSchool: '/api/school/updateSchool'
   }
 }

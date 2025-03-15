@@ -8,5 +8,26 @@ export const School = {
       method: 'get',
       params: params
     })
+  },
+  createSchool(data) {
+    return request({
+      url: url.School.createSchool,
+      method: 'post',
+      data: data
+    })
+  },
+  deleteSchool(params) {
+    return request({
+      url: url.School.deleteSchool,
+      method: 'delete',
+      params: params
+    })
+  },
+  updateSchool(data) {
+    return request({
+      url: url.School.updateSchool,
+      method: 'put',
+      data: data
+    })
   }
 }
