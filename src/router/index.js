@@ -88,6 +88,12 @@ export const constantRoutes = [
         name: 'School',
         component: () => import('@/views/school/index'),
         meta: { title: '学校信息管理', icon: 'el-icon-s-grid' }
+      },
+      {
+        path: '/weeklyPlan',
+        name: 'WeeklyPlan',
+        component: () => import('@/views/week/index'),
+        meta: { title: '周计划信息管理', icon: 'el-icon-s-grid' }
       }
     ]
   },

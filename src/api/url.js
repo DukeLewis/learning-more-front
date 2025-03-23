@@ -29,5 +29,11 @@ export const url = {
     createSchool: '/api/school/createSchool',
     deleteSchool: '/api/school/deleteSchool',
     updateSchool: '/api/school/updateSchool'
+  },
+  WeeklyPlan: {
+    listWeeklyPlanPage: '/api/weeklyPlan/listWeeklyPlanPage',
+    createWeeklyPlan: '/api/weeklyPlan/createWeeklyPlan',
+    deleteWeeklyPlan: '/api/weeklyPlan/deleteWeeklyPlan',
+    updateWeeklyPlan: '/api/weeklyPlan/updateWeeklyPlan'
   }
 }

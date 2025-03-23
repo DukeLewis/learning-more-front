@@ -2,10 +2,11 @@ import request from '@/utils/request'
 import { url } from '@/api/url'
 
 export const Clazz = {
-  listClassOverview() {
+  listClassOverview(params) {
     return request({
       url: url.Clazz.listClassOverview,
-      method: 'get'
+      method: 'get',
+      params: params
     })
   },
   getClassInfo(params) {
