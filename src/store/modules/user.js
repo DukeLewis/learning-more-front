@@ -60,11 +60,16 @@ const actions = {
     })
   }
 }
-
+const getters = {
+  token: state => state.token || getToken(),
+  name: state => state.name,
+  avatar: state => state.avatar
+}
 export default {
   namespaced: true,
   state,
   mutations,
-  actions
+  actions,
+  getters
 }
 

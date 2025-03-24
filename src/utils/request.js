@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
+import router from '@/router'
 import { getToken } from '@/utils/auth'
 import { validUrlIsLoginOrReg } from '@/utils/validate'
 
@@ -19,12 +20,12 @@ service.interceptors.request.use(
     // 如果有token且不是登录或注册接口，则添加token
 
     // 测试时候不需要校验token
-    // if (store.getters.token && !validUrlIsLoginOrReg(config.url)) {
-    //   // let each request carry token
-    //   // ['X-Token'] is a custom headers key
-    //   // please modify it according to the actual situation
-    //   config.headers['X-Token'] = getToken()
-    // }
+    if (store.getters.token && !validUrlIsLoginOrReg(config.url)) {
+      // let each request carry token
+      // ['X-Token'] is a custom headers key
+      // please modify it according to the actual situation
+      config.headers['X-Token'] = getToken()
+    }
     return config
   },
   error => {
@@ -39,15 +40,28 @@ service.interceptors.response.use(
   /**
    * If you want to get http information such as headers or status
    * Please return  response => response
-  */
+   */
 
   /**
    * Determine the request status by custom code
    * Here is just an example
    * You can also judge the status by HTTP Status Code
    */
+    // err => {
+    //   if (err.response && err.response.status === 403) {
+    //     store.dispatch('user/resetToken')
+    //     router.push({ name: 'Login' })
+    //     return Promise.reject('need login')
+    //   }
+    // },
   response => {
     const res = response.data
+    if (!res) {
+      store.dispatch('user/resetToken')
+      router.push({ name: 'Login' })
+      alert('need login')
+      return Promise.reject('need login')
+    }
     return res
 
     // 实际使用应该取消掉注释，对状态码进行校验
@@ -84,6 +98,10 @@ service.interceptors.response.use(
       type: 'error',
       duration: 5 * 1000
     })
+    if (error.response && error.response.status === 403) {
+      store.dispatch('user/resetToken')
+      router.push({ name: 'Login' })
+    }
     return Promise.reject(error)
   }
 )

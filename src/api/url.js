@@ -2,8 +2,8 @@
 export const url = {
   serverlessApiUrl: 'http://localhost:8090',
   User: {
-    login: '/user/login',
-    register: '/user/register'
+    login: '/api/user/login',
+    register: '/api/user/register'
   },
   Clazz: {
     listClassOverview: '/api/class/listClassOverview',
