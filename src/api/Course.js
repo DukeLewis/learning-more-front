@@ -22,5 +22,33 @@ export const Course = {
       method: 'delete',
       params: params
     })
+  },
+  updateCourse(data) {
+    return request({
+      url: url.Course.updateCourse,
+      method: 'put',
+      data: data
+    })
+  },
+  createCourse(data) {
+    return request({
+      url: url.Course.createCourse,
+      method: 'post',
+      data: data
+    })
+  },
+  createCourseFirst(data) {
+    return request({
+      url: url.Course.createCourseFirst,
+      method: 'post',
+      data: data
+    })
+  },
+  updateCourseFirst(data) {
+    return request({
+      url: url.Course.updateCourseFirst,
+      method: 'put',
+      data: data
+    })
   }
 }

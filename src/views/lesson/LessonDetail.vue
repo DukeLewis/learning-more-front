@@ -49,11 +49,12 @@ export default {
         const response = await Course.getCourseDetail({ courseId })
         this.course = {
           ...response,
-          activities: JSON.parse(response.activities),
-          objectives: JSON.parse(response.objectives)
+          activities: response.activities,
+          objectives: response.objectives
         }
         this.course?.activities?.forEach((activity) => {
           activity.steps = JSON.parse(activity.steps)
+          activity.materialsNeeded = activity.materialsNeeded.split('、')
         })
       } catch (error) {
         this.$message.error('获取课程详情失败：' + error.message)

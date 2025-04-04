@@ -83,6 +83,11 @@ export const constantRoutes = [
         component: () => import('@/views/lesson/LessonEdit.vue')
       },
       {
+        path: '/lesson/create/:id',
+        name: 'LessonCreateWithId',
+        component: () => import('@/views/lesson/LessonEdit.vue')
+      },
+      {
         path: '/school',
         name: 'School',
         component: () => import('@/views/school/index'),

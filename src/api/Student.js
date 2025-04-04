@@ -36,5 +36,11 @@ export const Student = {
       method: 'put',
       data: data
     })
+  },
+  getStudentDetailById(id) {
+    return request({
+      url: `${url.Student.getStudentInfo}${id}`,
+      method: 'get'
+    })
   }
 }

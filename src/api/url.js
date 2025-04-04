@@ -16,13 +16,18 @@ export const url = {
     listStudentOverviewPage: '/api/student/listStudentOverviewPage',
     createStudent: '/api/student/createStudent',
     deleteStudent: '/api/student/deleteStudent',
-    updateStudent: '/api/student/updateStudent'
+    updateStudent: '/api/student/updateStudent',
+    getStudentInfo: '/api/student/getStudentInfo/'
   },
   Course: {
     listCourseOverviewPage: '/api/course/listCourseOverviewPage',
     getCourseDetail: '/api/course/getCourseDetail',
     deleteCourse: '/api/course/deleteCourse',
-    generateCourseBaseInfo: '/api/course/generateCourseBaseInfo'
+    generateCourseBaseInfo: '/api/course/generateCourseBaseInfo',
+    updateCourse: '/api/course/updateCourse',
+    createCourse: '/api/course/createCourse',
+    createCourseFirst: '/api/course/createCourseFirst',
+    updateCourseFirst: '/api/course/updateCourseFirst'
   },
   School: {
     listSchoolOverviewPage: '/api/school/listSchoolOverviewPage',

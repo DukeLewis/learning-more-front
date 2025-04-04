@@ -58,7 +58,6 @@ export default {
     async fetchPlanList() {
       try {
         this.loading = true
-        // todo 根据学校和班级筛选条件获取周计划列表
         const { data, total } = await WeeklyPlan.listWeeklyPlanPage({
           schoolId: this.searchForm.schoolId,
           classId: this.searchForm.classId,

@@ -9,9 +9,9 @@
             <el-button
               type="success"
               icon="el-icon-magic-stick"
-              @click="handleRegenerateAll"
               :loading="regenerating"
               class="regenerate-btn"
+              @click="handleRegenerateAll"
             >
               AI 重新生成
             </el-button>
@@ -22,10 +22,10 @@
             <el-button
               type="success"
               icon="el-icon-magic-stick"
-              @click="handleGenerateBasicInfo"
               :loading="generatingBasicInfo"
               class="regenerate-btn"
               :disabled="!canGenerateBasicInfo"
+              @click="handleGenerateBasicInfo"
             >
               AI 生成基本信息
             </el-button>
@@ -35,9 +35,9 @@
     </div>
 
     <el-steps :active="activeStep" finish-status="success" class="steps">
-      <el-step title="基本信息"/>
-      <el-step title="课程目标"/>
-      <el-step title="课程活动"/>
+      <el-step title="基本信息" />
+      <el-step title="课程目标" />
+      <el-step title="课程活动" />
     </el-steps>
 
     <!-- 基本信息表单 -->
@@ -50,11 +50,11 @@
       class="form-container"
     >
       <el-form-item label="课程名称" prop="courseName">
-        <el-input v-model="courseForm.courseName" placeholder="请输入课程名称"/>
+        <el-input v-model="courseForm.courseName" placeholder="请输入课程名称" />
       </el-form-item>
 
       <el-form-item label="适用年龄" prop="ageGroup">
-        <el-input v-model="courseForm.ageGroup" placeholder="例如：7-12岁"/>
+        <el-input v-model="courseForm.ageGroup" placeholder="例如：7-12岁" />
       </el-form-item>
 
       <el-form-item label="总节数" prop="totalSessions">
@@ -94,6 +94,34 @@
           placeholder="请输入课程描述（不少于10个字符）"
         />
       </el-form-item>
+
+      <el-form-item label="课程时长" prop="duration">
+        <el-input-number
+          v-model="courseForm.duration"
+          :min="1"
+          :max="360"
+          :step="5"
+          style="width: 200px"
+        >
+          <template slot="append">分钟</template>
+        </el-input-number>
+        <span class="form-tip">每节课的时长（1-360分钟）</span>
+      </el-form-item>
+
+      <el-form-item label="课程类型" prop="type">
+        <el-select
+          v-model="courseForm.type"
+          placeholder="请选择课程类型"
+          style="width: 200px"
+        >
+          <el-option
+            v-for="item in courseTypes"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
     </el-form>
 
     <!-- 课程目标部分 -->
@@ -105,15 +133,15 @@
             <el-button
               type="success"
               icon="el-icon-magic-stick"
-              @click="handleGenerateObjectives"
               :loading="generatingObjectives"
               size="small"
+              @click="handleGenerateObjectives"
             >
               AI 生成目标
             </el-button>
           </el-tooltip>
         </div>
-        <el-button type="primary" plain @click="addObjective" icon="el-icon-plus" size="small">
+        <el-button type="primary" plain icon="el-icon-plus" size="small" @click="addObjective">
           手动添加目标
         </el-button>
       </div>
@@ -129,17 +157,17 @@
                 <span>目标 {{ index + 1 }}</span>
                 <el-button
                   type="text"
-                  @click="removeObjective(index)"
                   icon="el-icon-delete"
+                  @click="removeObjective(index)"
                 />
               </div>
             </template>
             <el-form :model="objective" label-width="100px">
               <el-form-item label="目标类型">
                 <el-select v-model="objective.objectiveType" placeholder="请选择目标类型">
-                  <el-option label="知识目标" value="knowledge"/>
-                  <el-option label="技能目标" value="skill"/>
-                  <el-option label="态度目标" value="attitude"/>
+                  <el-option label="知识目标" value="knowledge" />
+                  <el-option label="技能目标" value="skill" />
+                  <el-option label="态度目标" value="attitude" />
                 </el-select>
               </el-form-item>
               <el-form-item label="目标描述">
@@ -165,15 +193,15 @@
             <el-button
               type="success"
               icon="el-icon-magic-stick"
-              @click="handleGenerateActivities"
               :loading="generatingActivities"
               size="small"
+              @click="handleGenerateActivities"
             >
               AI 生成活动
             </el-button>
           </el-tooltip>
         </div>
-        <el-button type="primary" plain @click="addActivity" icon="el-icon-plus" size="small">
+        <el-button type="primary" plain icon="el-icon-plus" size="small" @click="addActivity">
           手动添加活动
         </el-button>
       </div>
@@ -189,8 +217,8 @@
                 <span>活动 {{ index + 1 }}</span>
                 <el-button
                   type="text"
-                  @click="removeActivity(index)"
                   icon="el-icon-delete"
+                  @click="removeActivity(index)"
                 />
               </div>
             </template>
@@ -232,8 +260,8 @@
                         <span>步骤 {{ stepIndex + 1 }}</span>
                         <el-button
                           type="text"
-                          @click="removeStep(activity, stepIndex)"
                           icon="el-icon-delete"
+                          @click="removeStep(activity, stepIndex)"
                         />
                       </div>
                     </template>
@@ -272,8 +300,8 @@
                           v-for="(point, pointIndex) in step.keyPoints"
                           :key="pointIndex"
                           closable
-                          @close="removeKeyPoint(step, pointIndex)"
                           class="key-point-tag"
+                          @close="removeKeyPoint(step, pointIndex)"
                         >
                           {{ point }}
                         </el-tag>
@@ -298,8 +326,8 @@
                 </div>
                 <el-button
                   type="text"
-                  @click="addStep(activity)"
                   icon="el-icon-plus"
+                  @click="addStep(activity)"
                 >
                   添加步骤
                 </el-button>
@@ -311,8 +339,8 @@
                   v-for="(material, materialIndex) in activity.materialsNeeded"
                   :key="materialIndex"
                   closable
-                  @close="removeMaterial(activity, materialIndex)"
                   class="material-tag"
+                  @close="removeMaterial(activity, materialIndex)"
                 >
                   {{ material }}
                 </el-tag>
@@ -341,6 +369,7 @@
     <!-- 底部按钮 -->
     <div class="form-footer">
       <el-button v-if="activeStep > 0" @click="prevStep">上一步</el-button>
+      <el-button v-if="this.$route.params.id" @click="prevStep">保存</el-button>
       <el-button
         v-if="activeStep < 2"
         type="primary"
@@ -351,8 +380,8 @@
       <el-button
         v-else
         type="primary"
-        @click="submitForm"
         :loading="submitting"
+        @click="submitForm"
       >
         提交
       </el-button>
@@ -378,11 +407,20 @@ export default {
       generatingActivities: false,
       generatingBasicInfo: false,
       generateBasicInfoData: '',
+      courseTypes: [
+        { label: '语言类', value: 'LANGUAGE' },
+        { label: '艺术类', value: 'ART' },
+        { label: '体育类', value: 'SPORTS' },
+        { label: '科技类', value: 'TECH' },
+        { label: '音乐类', value: 'MUSIC' }
+      ],
       courseForm: {
         courseName: '',
         ageGroup: '',
         totalSessions: 1,
         maxStudents: 30,
+        duration: 30,
+        type: '',
         coursePeriod: [],
         courseDescription: '',
         objectives: [],
@@ -410,6 +448,13 @@ export default {
         description: [
           { required: false, message: '请输入课程描述', trigger: 'blur' },
           { min: 10, message: '课程描述不能少于10个字符', trigger: 'blur' }
+        ],
+        duration: [
+          { required: true, message: '请输入课程时长', trigger: 'blur' },
+          { type: 'number', min: 1, max: 360, message: '课程时长必须在1-360分钟之间', trigger: 'blur' }
+        ],
+        type: [
+          { required: true, message: '请选择课程类型', trigger: 'change' }
         ]
       }
     }
@@ -422,13 +467,16 @@ export default {
     },
     canGenerateBasicInfo() {
       return this.courseForm.ageGroup &&
-        this.courseForm.maxStudents > 0
+        this.courseForm.maxStudents > 0 &&
+        this.courseForm.type
     }
   },
   created() {
     const { id } = this.$route.params
     if (id) {
-      this.isEdit = true
+      if (this.$route.name === 'LessonEdit') {
+        this.isEdit = true
+      }
       this.fetchCourseDetail(id)
     }
   },
@@ -439,12 +487,15 @@ export default {
         const { startTime, endTime, ...courseData } = response
         console.log(response)
         console.log(courseData)
-        const objectives = JSON.parse(courseData.objectives)
-        const activities = JSON.parse(courseData.activities)
+        // const objectives = JSON.parse(courseData.objectives)
+        // const activities = JSON.parse(courseData.activities)
+        const objectives = courseData.objectives
+        const activities = courseData.activities
         activities.forEach((activity) => {
           activity.steps = JSON.parse(activity.steps)
           activity.materialsNeeded = activity.materialsNeeded.split('、')
         })
+        this.activeStep = courseData.activeStep
         this.courseForm = {
           ...courseData,
           activities,
@@ -620,48 +671,100 @@ export default {
       // }
     },
     handleGenerateBasicInfo() {
-      if (!this.courseForm.ageGroup || !this.courseForm.maxStudents) {
-        this.$message.warning('请先填写适用年龄和最多学生数')
+      if (!this.courseForm.ageGroup || !this.courseForm.maxStudents || !this.courseForm.type) {
+        this.$message.warning('请先填写适用年龄、最多学生数和课程类型')
         return
       }
 
       try {
         this.generatingBasicInfo = true
         const data = {
-          ageRange: this.courseForm.ageGroup,
-          maxStudents: this.courseForm.maxStudents
+          ageGroup: this.courseForm.ageGroup,
+          maxStudents: this.courseForm.maxStudents,
+          type: this.courseForm.type
         }
         const messageCallBack = (message) => {
           // 更新数据
           this.generateBasicInfoData += message.data
+          console.log('处理前：{}', this.generateBasicInfoData)
+          this.generateBasicInfoData = this.generateBasicInfoData.replace(/\\\\LINE\/\//g, '\n')
+          console.log('处理后：{}', this.generateBasicInfoData)
           // 解析数据
           const parseData = assignProperties([
             { sourceKey: 'name', targetProp: 'courseName' },
-            { sourceKey: 'total session', targetProp: 'totalSessions' },
+            { sourceKey: 'totalsession', targetProp: 'totalSessions' },
             { sourceKey: 'description', targetProp: 'courseDescription' },
-            { sourceKey: 'start time', targetProp: 'startTime' },
-            { sourceKey: 'end time', targetProp: 'endTime' }
+            { sourceKey: 'starttime', targetProp: 'startTime' },
+            { sourceKey: 'endtime', targetProp: 'endTime' },
+            { sourceKey: 'duration', targetProp: 'duration' }
           ], this.generateBasicInfoData)
+          // 转换日期格式并设置到表单的 coursePeriod 中
+          if (parseData.startTime && parseData.endTime) {
+            // 日期格式化函数，确保日期格式为 yyyy-MM-dd
+            const formatDate = (dateStr) => {
+              // 如果已经是 Date 对象，转换为字符串
+              if (dateStr instanceof Date) {
+                const year = dateStr.getFullYear()
+                const month = String(dateStr.getMonth() + 1).padStart(2, '0')
+                const day = String(dateStr.getDate()).padStart(2, '0')
+                return `${year}-${month}-${day}`
+              }
+
+              // 如果是字符串但格式不正确，尝试转换
+              if (typeof dateStr === 'string' && !dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                const date = new Date(dateStr)
+                return formatDate(date)
+              }
+
+              // 如果已经是正确格式的字符串，直接返回
+              return dateStr
+            }
+
+            // 设置到表单数据中
+            this.courseForm.coursePeriod = [
+              formatDate(parseData.startTime),
+              formatDate(parseData.endTime)
+            ]
+          }
           this.courseForm = {
             ...this.courseForm,
-            ...parseData,
-            coursePeriod: [parseData.startTime, parseData.endTime]
+            ...parseData
           }
         }
         createEventSource(url.Course.generateCourseBaseInfo, data, messageCallBack)
           .then(res => {
-            // 保存课程基本信息
             // 生成结束
             this.$message.success('基本信息已生成')
+            // 保存课程基本信息
+            console.log('yes')
+            const startTime = this.courseForm?.coursePeriod[0]
+            const endTime = this.courseForm?.coursePeriod[1]
+            if (this.$route.name === 'LessonCreate') {
+              Course.createCourseFirst({
+                ...this.courseForm,
+                startTime,
+                endTime
+              }).then((res) => {
+                this.generatingBasicInfo = false
+                this.$router.push({ name: 'LessonCreateWithId', params: { id: res.data }})
+              })
+            } else if (this.$route.name === 'LessonCreateWithId') {
+              Course.updateCourseFirst({
+                ...this.courseForm,
+                startTime,
+                endTime
+              }).then(() => {
+                this.generatingBasicInfo = false
+              })
+            }
           })
           .catch(err => {
             // 生成出错
+            this.generatingBasicInfo = false
             console.log(err)
           })
       } catch (error) {
         this.$message.error('生成失败：' + error.message)
-      } finally {
-        this.generatingBasicInfo = false
       }
     }
   }
@@ -720,6 +823,16 @@ export default {
     border-radius: 4px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
     margin-bottom: 20px;
+
+    .form-tip {
+      margin-left: 10px;
+      color: #909399;
+      font-size: 13px;
+    }
+
+    .el-input-number {
+      width: 200px;
+    }
   }
 
   .objectives-list,
