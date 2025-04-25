@@ -50,5 +50,12 @@ export const Course = {
       method: 'put',
       data: data
     })
+  },
+  createOrUpdateCourseSecond(data) {
+    return request({
+      url: url.Course.createOrUpdateCourseSecond,
+      method: 'post',
+      data: data
+    })
   }
 }

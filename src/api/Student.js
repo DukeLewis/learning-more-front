@@ -42,5 +42,19 @@ export const Student = {
       url: `${url.Student.getStudentInfo}${id}`,
       method: 'get'
     })
+  },
+  downloadTemplate() {
+    return request({
+      url: url.Student.downloadTemplate,
+      method: 'get',
+      responseType: 'blob'
+    })
+  },
+  importStudents(data) {
+    return request({
+      url: url.Student.importData,
+      method: 'post',
+      data: data
+    })
   }
 }

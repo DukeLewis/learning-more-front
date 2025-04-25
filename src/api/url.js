@@ -17,7 +17,9 @@ export const url = {
     createStudent: '/api/student/createStudent',
     deleteStudent: '/api/student/deleteStudent',
     updateStudent: '/api/student/updateStudent',
-    getStudentInfo: '/api/student/getStudentInfo/'
+    getStudentInfo: '/api/student/getStudentInfo/',
+    downloadTemplate: '/api/student/download-template',
+    importData: '/api/student/import'
   },
   Course: {
     listCourseOverviewPage: '/api/course/listCourseOverviewPage',
@@ -27,7 +29,9 @@ export const url = {
     updateCourse: '/api/course/updateCourse',
     createCourse: '/api/course/createCourse',
     createCourseFirst: '/api/course/createCourseFirst',
-    updateCourseFirst: '/api/course/updateCourseFirst'
+    updateCourseFirst: '/api/course/updateCourseFirst',
+    generateCourseObjectives: '/api/course/generateCourseObjectives',
+    createOrUpdateCourseSecond: '/api/course/createOrUpdateCourseSecond'
   },
   School: {
     listSchoolOverviewPage: '/api/school/listSchoolOverviewPage',

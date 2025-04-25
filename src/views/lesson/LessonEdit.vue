@@ -369,7 +369,7 @@
     <!-- 底部按钮 -->
     <div class="form-footer">
       <el-button v-if="activeStep > 0" @click="prevStep">上一步</el-button>
-      <el-button v-if="this.$route.params.id" @click="prevStep">保存</el-button>
+      <el-button v-if="this.$route.params.id" @click="saveCourseData">保存</el-button>
       <el-button
         v-if="activeStep < 2"
         type="primary"
@@ -406,7 +406,12 @@ export default {
       generatingObjectives: false,
       generatingActivities: false,
       generatingBasicInfo: false,
+      // 后端流式返回的课程基础数据（未解析）
       generateBasicInfoData: '',
+      // 后端返回的课程目标数据（未解析）
+      generateObjectiveData: '',
+      // 课程目标数量
+      totalObjectiveNumber: -1,
       courseTypes: [
         { label: '语言类', value: 'LANGUAGE' },
         { label: '艺术类', value: 'ART' },
@@ -481,6 +486,40 @@ export default {
     }
   },
   methods: {
+    // 保存当前步骤的课程内容
+    saveCourseData() {
+      if (this.activeStep === 0) {
+        this.$refs.basicForm.validate().then(() => {
+          const startTime = this.courseForm?.coursePeriod[0]
+          const endTime = this.courseForm?.coursePeriod[1]
+          if (this.$route.name === 'LessonCreate') {
+            Course.createCourseFirst({
+              ...this.courseForm,
+              startTime,
+              endTime
+            }).then((res) => {
+              this.$message.success('保存成功')
+              this.$router.push({ name: 'LessonCreateWithId', params: { id: res.data }})
+            })
+          } else if (this.$route.name === 'LessonCreateWithId') {
+            Course.updateCourseFirst({
+              ...this.courseForm,
+              startTime,
+              endTime
+            }).then(() => {
+              this.$message.success('保存成功')
+            })
+          }
+        }).catch(() => {
+          this.$message.error('请填写完整课程信息')
+        })
+      } else if (this.activeStep === 1) {
+        Course.createOrUpdateCourseSecond(this.courseForm.objectives).then((res) => {
+          this.courseForm.objectives = res.data
+          this.$message.success('保存成功')
+        })
+      }
+    },
     async fetchCourseDetail(id) {
       try {
         const response = await Course.getCourseDetail({ courseId: id })
@@ -646,11 +685,59 @@ export default {
       //   this.regenerating = false
       // }
     },
+    // 生成课程第二步内容（课程目标）
     async handleGenerateObjectives() {
       try {
         this.generatingObjectives = true
-        const response = await Course.generateObjectives(this.$route.params.id)
-        this.courseForm.objectives = response
+        const data = {
+          courseId: this.$route.params.id
+        }
+        const messageCallBack = (message) => {
+          // 更新数据
+          this.generateObjectiveData += message.data
+          console.log('处理前：{}', this.generateObjectiveData)
+          this.generateObjectiveData = this.generateObjectiveData.replace(/\\\\LINE\/\//g, '\n')
+          console.log('处理后：{}', this.generateObjectiveData)
+          // 解析数据
+          if (this.totalObjectiveNumber === -1) {
+            const parseData = assignProperties([
+              { sourceKey: 'totalnumber', targetProp: 'totalNumber' }
+            ], this.generateObjectiveData)
+            if (parseData.totalNumber) {
+              this.totalObjectiveNumber = parseData.totalNumber
+            }
+          } else {
+            const filedArr = []
+            for (let i = 1; i <= this.totalObjectiveNumber; i++) {
+              filedArr.push({ sourceKey: 'objectivetype' + i, targetProp: 'objectiveType' + i })
+              filedArr.push({ sourceKey: 'objectivedescription' + i, targetProp: 'objectiveDescription' + i })
+            }
+            const parseData = assignProperties(filedArr, this.generateObjectiveData)
+            const objectives = []
+            for (let i = 1; i <= this.totalObjectiveNumber; i++) {
+              objectives.push({
+                objectiveType: parseData['objectiveType' + i] || '',
+                description: parseData['objectiveDescription' + i] || ''
+              })
+            }
+            this.courseForm = {
+              ...this.courseForm,
+              objectives
+            }
+          }
+        }
+        createEventSource(url.Course.generateCourseObjectives, data, messageCallBack).then((res) => {
+          this.$message.success('课程目标生成成功')
+          this.totalObjectiveNumber = -1
+          this.generateObjectiveData = ''
+          this.courseForm.objectives.forEach((objective) => {
+            objective.courseId = this.$route.params.id
+          })
+          Course.createOrUpdateCourseSecond(this.courseForm.objectives).then((res) => {
+            this.courseForm.objectives = res.data
+            console.log('保存成功')
+          })
+        })
         this.$message.success('课程目标生成成功')
       } catch (error) {
         this.$message.error('生成课程目标失败：' + error.message)
@@ -735,6 +822,7 @@ export default {
           .then(res => {
             // 生成结束
             this.$message.success('基本信息已生成')
+            this.generatingBasicInfo = ''
             // 保存课程基本信息
             console.log('yes')
             const startTime = this.courseForm?.coursePeriod[0]
@@ -743,7 +831,8 @@ export default {
               Course.createCourseFirst({
                 ...this.courseForm,
                 startTime,
-                endTime
+                endTime,
+                activeStep: this.activeStep + 1
               }).then((res) => {
                 this.generatingBasicInfo = false
                 this.$router.push({ name: 'LessonCreateWithId', params: { id: res.data }})
@@ -752,7 +841,8 @@ export default {
               Course.updateCourseFirst({
                 ...this.courseForm,
                 startTime,
-                endTime
+                endTime,
+                activeStep: this.activeStep + 1
               }).then(() => {
                 this.generatingBasicInfo = false
               })

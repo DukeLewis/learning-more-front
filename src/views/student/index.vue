@@ -2,7 +2,46 @@
   <div class="app-container">
     <el-card>
       <div class="filter-container">
-        <el-button type="primary" @click="handleCreate">添加学生</el-button>
+        <el-form :inline="true" :model="listQuery" class="filter-form">
+          <el-form-item label="姓名">
+            <el-input
+              v-model="listQuery.name"
+              placeholder="请输入学生姓名"
+              clearable
+            />
+          </el-form-item>
+          <el-form-item label="班级">
+            <el-input
+              v-model="listQuery.className"
+              placeholder="请输入班级名称"
+              clearable
+            />
+          </el-form-item>
+          <el-form-item label="性别">
+            <el-select
+              v-model="listQuery.gender"
+              placeholder="请选择性别"
+              clearable
+            >
+              <el-option label="男" value="男"/>
+              <el-option label="女" value="女"/>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="年龄">
+            <el-input-number
+              v-model="listQuery.age"
+              placeholder="请输入年龄"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="handleFilter">筛选</el-button>
+            <el-button @click="resetFilters">重置</el-button>
+          </el-form-item>
+        </el-form>
+        <div class="action-buttons">
+          <el-button type="primary" @click="handleCreate">添加学生</el-button>
+          <el-button type="success" @click="handleImport">导入数据</el-button>
+        </div>
       </div>
 
       <el-table
@@ -127,6 +166,48 @@
         <el-button type="primary" @click="previewVisible = false">关闭</el-button>
       </div>
     </el-dialog>
+
+    <!-- 导入数据对话框 -->
+    <el-dialog
+      title="导入学生数据"
+      :visible.sync="importDialogVisible"
+      width="500px"
+      class="import-dialog"
+    >
+      <div class="import-content">
+        <div class="template-section">
+          <h4>下载导入模板</h4>
+          <p>请先下载模板文件，按照模板格式填写数据后再导入</p>
+          <el-button
+            type="primary"
+            @click="downloadTemplate"
+            icon="el-icon-download"
+          >
+            下载模板
+          </el-button>
+        </div>
+        <div class="upload-section">
+          <h4>上传数据文件</h4>
+          <p>请选择填写好的Excel文件进行上传</p>
+          <el-upload
+            class="upload-demo"
+            drag
+            action="#"
+            :http-request="handleUpload"
+            :before-upload="beforeUpload"
+            :show-file-list="true"
+            accept=".xlsx,.xls"
+          >
+            <i class="el-icon-upload"></i>
+            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+            <div class="el-upload__tip" slot="tip">只能上传xlsx/xls文件</div>
+          </el-upload>
+        </div>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="importDialogVisible = false">取消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -146,7 +227,11 @@ export default {
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 20
+        limit: 20,
+        name: '',
+        className: '',
+        gender: '',
+        age: ''
       },
       temp: {
         id: undefined,
@@ -176,11 +261,12 @@ export default {
         className: '',
         subjects: []
       },
-      chart: null // 保存图表实例
+      chart: null, // 保存图表实例
+      importDialogVisible: false
     }
   },
   created() {
-    this.getList()
+    this.getList(true)
   },
   // 组件销毁时清理图表实例
   beforeDestroy() {
@@ -190,9 +276,13 @@ export default {
     }
   },
   methods: {
-    getList() {
+    getList(init = false) {
       this.listLoading = true
-      Student.fetchList(this.listQuery).then(response => {
+      const { page, limit } = this.listQuery
+      Student.fetchList(init ? {
+        page,
+        limit
+      } : this.listQuery).then(response => {
         this.list = response.data
         this.total = response.total
         this.listLoading = false
@@ -334,6 +424,61 @@ export default {
       }
 
       this.chart.setOption(option)
+    },
+    handleFilter() {
+      this.listQuery.page = 1
+      this.getList()
+    },
+    resetFilters() {
+      this.listQuery = {
+        page: 1,
+        limit: 20,
+        name: '',
+        className: '',
+        gender: '',
+        age: ''
+      }
+      this.getList(true)
+    },
+    handleImport() {
+      this.importDialogVisible = true
+    },
+    async downloadTemplate() {
+      try {
+        const response = await Student.downloadTemplate()
+        // 创建下载链接
+        const url = window.URL.createObjectURL(new Blob([response]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', '学生信息导入模板.xlsx')
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      } catch (error) {
+        this.$message.error('下载模板失败：' + error.message)
+      }
+    },
+    beforeUpload(file) {
+      const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+        file.type === 'application/vnd.ms-excel'
+      if (!isExcel) {
+        this.$message.error('只能上传Excel文件！')
+        return false
+      }
+      return true
+    },
+    async handleUpload(file) {
+      try {
+        const formData = new FormData()
+        formData.append('file', file.file)
+        await Student.importStudents(formData)
+        this.$message.success('导入成功')
+        this.importDialogVisible = false
+        this.getList(true)
+      } catch (error) {
+        this.$message.error('导入失败：' + error.message)
+      }
     }
   }
 }
@@ -342,6 +487,24 @@ export default {
 <style scoped lang="scss">
 .filter-container {
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  .filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding: 20px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+
+    .el-input-number {
+      width: 120px;
+    }
+  }
 }
 
 .student-detail-dialog {
@@ -364,6 +527,25 @@ export default {
         font-size: 16px;
         color: #303133;
       }
+    }
+  }
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.import-dialog {
+  .import-content {
+    .template-section {
+      margin-bottom: 20px;
+    }
+
+    .upload-section {
+      margin-bottom: 20px;
     }
   }
 }

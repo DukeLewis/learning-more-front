@@ -1,6 +1,7 @@
 <script>
 import { Course } from '@/api/Course'
 import steps from 'element-ui/packages/steps'
+import html2pdf from 'html2pdf.js'
 
 export default {
   name: 'LessonDetail',
@@ -25,6 +26,9 @@ export default {
         activities: []
       }
     }
+  },
+  created() {
+    this.fetchCourseDetail()
   },
   methods: {
     getObjectiveTypeTag(type) {
@@ -59,19 +63,33 @@ export default {
       } catch (error) {
         this.$message.error('获取课程详情失败：' + error.message)
       }
+    },
+    downloadPdf() {
+      const element = this.$refs.lessonDetail
+      // 使用html2pdf生成PDF并下载
+      html2pdf()
+        .from(element)
+        .save('课程详情.pdf')
     }
-  },
-  created() {
-    this.fetchCourseDetail()
   }
 }
 </script>
 
 <template>
-  <div class="lesson-detail">
+  <div class="lesson-detail" ref="lessonDetail">
     <!-- 基本信息部分 -->
     <div class="section basic-info">
-      <h1>{{ course.courseName }}</h1>
+      <div class="header-section">
+        <h1>{{ course.courseName }}</h1>
+        <el-button
+          type="primary"
+          @click="downloadPdf"
+          class="download-btn"
+          icon="el-icon-download"
+        >
+          下载课程详情
+        </el-button>
+      </div>
 
       <!-- 主要信息 -->
       <div class="info-grid">
@@ -241,83 +259,138 @@ export default {
 
 <style scoped lang="scss">
 .lesson-detail {
-  padding: 20px;
+  padding: 30px;
   max-width: 1200px;
   margin: 0 auto;
+  background: #f9fafc;
+  min-height: 100vh;
 
   .section {
     margin-bottom: 40px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
   }
 
   // 基本信息样式
   .basic-info {
     background: #fff;
-    border-radius: 8px;
-    padding: 24px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+
+    .header-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+
+      .download-btn {
+        padding: 12px 20px;
+        font-size: 14px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 6px rgba(64, 158, 255, 0.2);
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+        }
+
+        i {
+          margin-right: 6px;
+        }
+      }
+    }
 
     h1 {
-      margin: 0 0 24px 0;
-      font-size: 28px;
+      margin: 0;
+      font-size: 32px;
+      font-weight: 600;
       color: #303133;
+      border-left: 5px solid #409EFF;
+      padding-left: 15px;
     }
 
     .info-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-bottom: 24px;
-      padding: 20px;
-      background: #f8f9fa;
-      border-radius: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+      margin-bottom: 30px;
+      padding: 25px;
+      background: linear-gradient(to right, #f8f9fa, #f0f2f5);
+      border-radius: 12px;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
     }
 
     .time-info {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-bottom: 24px;
-      padding: 20px;
-      background: #f8f9fa;
-      border-radius: 8px;
+      margin-bottom: 30px;
+
+      .time-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+      }
     }
 
     .info-item {
       display: flex;
       align-items: center;
       color: #606266;
+      padding: 12px;
+      border-radius: 8px;
+      transition: all 0.2s;
+
+      &:hover {
+        background: rgba(64, 158, 255, 0.1);
+      }
 
       i {
-        font-size: 18px;
-        margin-right: 8px;
+        font-size: 22px;
+        margin-right: 12px;
         color: #409EFF;
+        background: rgba(64, 158, 255, 0.1);
+        padding: 8px;
+        border-radius: 50%;
       }
 
       .label {
         color: #909399;
         margin-right: 8px;
+        font-weight: 500;
       }
 
       .value {
-        font-weight: 500;
+        font-weight: 600;
         color: #303133;
       }
     }
 
     .description-section {
       h3 {
-        font-size: 18px;
+        font-size: 20px;
         color: #303133;
         margin: 0 0 16px 0;
+        display: flex;
+        align-items: center;
+
+        i {
+          margin-right: 8px;
+          color: #409EFF;
+        }
       }
 
       .description {
         color: #606266;
         line-height: 1.8;
-        padding: 16px;
+        padding: 20px;
         background: #f8f9fa;
-        border-radius: 8px;
-        font-size: 14px;
+        border-radius: 12px;
+        font-size: 15px;
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
+        white-space: pre-line;
       }
     }
   }
@@ -325,21 +398,45 @@ export default {
   // 课程目标样式
   .objectives {
     h2 {
-      margin-bottom: 20px;
-      font-size: 22px;
+      margin-bottom: 25px;
+      font-size: 26px;
       color: #303133;
+      display: flex;
+      align-items: center;
+
+      i {
+        margin-right: 10px;
+        color: #409EFF;
+      }
+    }
+
+    .objectives-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
     }
 
     .objective-card {
-      margin-bottom: 15px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+      }
 
       .objective-header {
-        margin-bottom: 10px;
+        margin-bottom: 15px;
+
+        .el-tag {
+          padding: 6px 12px;
+          font-size: 14px;
+        }
       }
 
       .objective-content {
         color: #606266;
-        line-height: 1.6;
+        line-height: 1.8;
+        font-size: 15px;
       }
     }
   }
@@ -347,84 +444,157 @@ export default {
   // 课程活动样式
   .activities {
     h2 {
-      margin-bottom: 20px;
-      font-size: 22px;
+      margin-bottom: 25px;
+      font-size: 26px;
       color: #303133;
+      display: flex;
+      align-items: center;
+
+      i {
+        margin-right: 10px;
+        color: #409EFF;
+      }
+    }
+
+    .el-timeline-item {
+      padding-bottom: 30px;
+
+      .el-timeline-item__timestamp {
+        font-size: 14px;
+        color: #909399;
+        font-weight: 600;
+      }
     }
 
     .activity-card {
+      transition: all 0.3s ease;
+
+      &:hover {
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+      }
+
       .activity-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ebeef5;
+        padding-bottom: 15px;
 
         h3 {
           margin: 0;
           color: #303133;
+          font-size: 20px;
+          display: flex;
+          align-items: center;
+
+          i {
+            margin-right: 8px;
+            color: #409EFF;
+          }
         }
       }
 
       .activity-description {
-        margin-bottom: 20px;
+        margin-bottom: 25px;
         color: #606266;
-        line-height: 1.6;
+        line-height: 1.8;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        font-size: 15px;
       }
 
       .activity-steps {
-        margin: 20px 0;
+        margin: 25px 0;
 
         h4 {
-          margin: 0 0 15px 0;
-          font-size: 16px;
+          margin: 0 0 20px 0;
+          font-size: 18px;
           color: #303133;
+          display: flex;
+          align-items: center;
+
+          i {
+            margin-right: 8px;
+            color: #409EFF;
+          }
         }
 
         .step-title {
-          font-weight: 500;
+          font-weight: 600;
           color: #303133;
+          font-size: 16px;
         }
 
         .step-duration {
-          margin-left: 8px;
+          margin-left: 10px;
           color: #909399;
-          font-size: 13px;
+          font-size: 14px;
+          background: rgba(144, 147, 153, 0.1);
+          padding: 2px 8px;
+          border-radius: 12px;
+          display: inline-flex;
+          align-items: center;
+
+          i {
+            margin-right: 4px;
+          }
+        }
+
+        .step-content {
+          background: #fff;
+          border-radius: 8px;
+          padding: 15px;
+          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+          margin-top: 10px;
         }
 
         .step-description {
           color: #606266;
-          line-height: 1.6;
-          margin-bottom: 10px;
+          line-height: 1.8;
+          margin-bottom: 15px;
+          font-size: 15px;
         }
 
         .step-tips {
-          margin: 10px 0;
+          margin: 15px 0;
 
           .el-alert {
-            padding: 8px 16px;
+            border-radius: 8px;
+            padding: 10px 16px;
           }
         }
 
         .step-key-points {
-          margin-top: 10px;
-          padding: 10px;
+          margin-top: 15px;
+          padding: 15px;
           background: #f8f9fa;
-          border-radius: 4px;
+          border-radius: 8px;
+          box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
 
           .key-points-title {
-            font-weight: 500;
+            font-weight: 600;
             color: #303133;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+
+            i {
+              margin-right: 6px;
+              color: #E6A23C;
+            }
           }
 
           ul {
             margin: 0;
-            padding-left: 20px;
+            padding-left: 25px;
 
             li {
               color: #606266;
-              line-height: 1.6;
-              margin-bottom: 4px;
+              line-height: 1.8;
+              margin-bottom: 8px;
+              padding-left: 5px;
 
               &:last-child {
                 margin-bottom: 0;
@@ -435,21 +605,62 @@ export default {
       }
 
       .materials {
-        margin-top: 20px;
+        margin-top: 25px;
         padding-top: 20px;
         border-top: 1px solid #ebeef5;
 
         h4 {
-          margin: 0 0 10px 0;
-          font-size: 14px;
-          color: #909399;
+          margin: 0 0 15px 0;
+          font-size: 18px;
+          color: #303133;
+          display: flex;
+          align-items: center;
+
+          i {
+            margin-right: 8px;
+            color: #409EFF;
+          }
+        }
+
+        .materials-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
         }
 
         .material-tag {
-          margin-right: 8px;
-          margin-bottom: 8px;
+          margin-right: 0;
+          margin-bottom: 0;
+          padding: 6px 12px;
+          border-radius: 12px;
+          font-size: 13px;
+          transition: all 0.2s;
+
+          &:hover {
+            transform: scale(1.05);
+          }
         }
       }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 15px;
+
+    .basic-info {
+      padding: 20px;
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .info-grid, .time-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .objectives .objectives-grid {
+      grid-template-columns: 1fr;
     }
   }
 }
