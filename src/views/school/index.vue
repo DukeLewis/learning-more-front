@@ -80,7 +80,7 @@ export default {
           type: 'warning'
         })
         // 这里调用删除学校的 API
-        await School.deleteSchool({ schoolId: row.id})
+        await School.deleteSchool({ schoolId: row.id })
         this.$message.success('删除成功')
         await this.fetchSchoolList()
       } catch (error) {
@@ -134,6 +134,28 @@ export default {
     handleCurrentChange(val) {
       this.page.current = val
       this.fetchSchoolList()
+    },
+    handleView(row) {
+      this.$alert(`
+        <div class="school-detail">
+          <div class="detail-item">
+            <span class="label">学校名称：</span>
+            <span class="value">${row.name}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">学校地址：</span>
+            <span class="value">${row.position}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">学生人数：</span>
+            <span class="value">${row.quantity}</span>
+          </div>
+        </div>
+      `, '学校详情', {
+        confirmButtonText: '确定',
+        customClass: 'detail-dialog',
+        dangerouslyUseHTMLString: true
+      })
     }
   }
 }
@@ -195,22 +217,37 @@ export default {
       />
       <el-table-column
         label="操作"
-        width="200"
+        width="240"
         fixed="right"
+        align="center"
       >
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="primary"
-            @click="handleEdit(scope.row)"
-          >编辑
-          </el-button>
-          <el-button
-            size="mini"
-            type="danger"
-            @click="handleDelete(scope.row)"
-          >删除
-          </el-button>
+          <div class="operation-buttons">
+            <el-button
+              size="mini"
+              type="primary"
+              @click="handleView(scope.row)"
+            >
+              <i class="el-icon-view"></i>
+              查看
+            </el-button>
+            <el-button
+              size="mini"
+              type="primary"
+              @click="handleEdit(scope.row)"
+            >
+              <i class="el-icon-edit"></i>
+              编辑
+            </el-button>
+            <el-button
+              size="mini"
+              type="danger"
+              @click="handleDelete(scope.row)"
+            >
+              <i class="el-icon-delete"></i>
+              删除
+            </el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -296,6 +333,64 @@ export default {
     margin-top: 20px;
     display: flex;
     justify-content: flex-end;
+  }
+}
+
+.operation-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+
+  .el-button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+
+    i {
+      font-size: 14px;
+    }
+
+    span {
+      font-size: 13px;
+    }
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+  }
+}
+
+:deep(.detail-dialog) {
+  .el-message-box__content {
+    padding: 20px;
+  }
+
+  .school-detail {
+    .detail-item {
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .label {
+        color: #606266;
+        width: 80px;
+        text-align: right;
+        margin-right: 12px;
+      }
+
+      .value {
+        color: #303133;
+        font-weight: 500;
+      }
+    }
   }
 }
 </style>

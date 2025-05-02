@@ -11,94 +11,101 @@ export default {
       loading: false,
       hasMore: true,
       scrollTimeout: null,
-      scrollContainer: null
+      scrollContainer: null,
+      filterQuery: {
+        name: '',
+        type: '',
+        duration: '',
+        page: 1,
+        pageSize: 8
+      },
+      total: 0
     }
   },
   methods: {
-    async fetchLessons(needRefresh = false) {
-      if ((this.loading || !this.hasMore) && !needRefresh) {
-        console.log('Skip fetch:', { loading: this.loading, hasMore: this.hasMore })
+    handleFilter() {
+      this.filterQuery.page = 1
+      this.fetchLessons(true)
+    },
+    resetFilter() {
+      this.filterQuery = {
+        name: '',
+        type: '',
+        duration: '',
+        page: 1,
+        pageSize: 8
+      }
+      this.fetchLessons(true)
+    },
+    handleSizeChange(val) {
+      this.filterQuery.pageSize = val
+      this.fetchLessons(true)
+    },
+    handleCurrentChange(val) {
+      this.filterQuery.page = val
+      this.fetchLessons(true)
+    },
+    fetchLessons(needRefresh = false) {
+      if (this.loading) {
         return
       }
-
       this.loading = true
-      try {
-        console.log('Fetching page:', this.page)
-        if (needRefresh) {
-          this.page = 1
-          this.pageSize = 8
-          this.lessons = []
-        }
-        const response = await Course.listCourseOverviewPage({
-          page: this.page,
-          pageSize: this.pageSize
+      Course.listCourseOverviewPage(this.filterQuery)
+        .then(res => {
+          this.lessons = res.data
+          this.total = res.total
+        }).finally(() => {
+          this.loading = false
         })
-
-        const newLessons = response.data
-        console.log('Received lessons:', newLessons.length)
-
-        if (newLessons && newLessons.length > 0) {
-          this.lessons = [...this.lessons, ...newLessons]
-          this.hasMore = newLessons.length === this.pageSize
-          this.page++
-        } else {
-          this.hasMore = false
-        }
-      } catch (error) {
-        console.error('Failed to fetch lessons:', error)
-        this.hasMore = false
-      } finally {
-        this.loading = false
-      }
     },
-    handleScroll() {
-      if (this.scrollTimeout) return
-
-      this.scrollTimeout = setTimeout(() => {
-        if (!this.scrollContainer) return
-
-        const scrollHeight = this.scrollContainer.scrollHeight
-        const scrollTop = this.scrollContainer.scrollTop
-        const clientHeight = this.scrollContainer.clientHeight
-        const threshold = 100
-
-        console.log('Scroll position:', {
-          scrollHeight,
-          scrollTop,
-          clientHeight,
-          difference: scrollHeight - scrollTop - clientHeight,
-          hasMore: this.hasMore,
-          loading: this.loading
-        })
-
-        if (scrollHeight - scrollTop - clientHeight < threshold) {
-          console.log('Triggering fetch')
-          this.fetchLessons()
-        }
-        this.scrollTimeout = null
-      }, 100)
-    },
+    // handleScroll() {
+    //   if (this.scrollTimeout) return
+    //
+    //   this.scrollTimeout = setTimeout(() => {
+    //     if (!this.scrollContainer) return
+    //
+    //     const scrollHeight = this.scrollContainer.scrollHeight
+    //     const scrollTop = this.scrollContainer.scrollTop
+    //     const clientHeight = this.scrollContainer.clientHeight
+    //     const threshold = 100
+    //
+    //     console.log('Scroll position:', {
+    //       scrollHeight,
+    //       scrollTop,
+    //       clientHeight,
+    //       difference: scrollHeight - scrollTop - clientHeight,
+    //       hasMore: this.hasMore,
+    //       loading: this.loading
+    //     })
+    //
+    //     if (scrollHeight - scrollTop - clientHeight < threshold) {
+    //       console.log('Triggering fetch')
+    //       this.fetchLessons()
+    //     }
+    //     this.scrollTimeout = null
+    //   }, 100)
+    // },
     initScrollListener() {
-      this.$nextTick(() => {
-        this.scrollContainer = this.$refs.listContainer
-        if (this.scrollContainer) {
-          console.log('Adding scroll listener to container')
-          this.scrollContainer.addEventListener('scroll', this.handleScroll)
-          this.handleScroll()
-        } else {
-          console.error('Scroll container not found')
-        }
-      })
-    },
-    removeScrollListener() {
-      if (this.scrollContainer) {
-        this.scrollContainer.removeEventListener('scroll', this.handleScroll)
-        this.scrollContainer = null
-      }
-      if (this.scrollTimeout) {
-        clearTimeout(this.scrollTimeout)
-      }
+      // this.$nextTick(() => {
+      //   this.scrollContainer = this.$refs.listContainer
+      //   if (this.scrollContainer) {
+      //     console.log('Adding scroll listener to container')
+      //     this.scrollContainer.addEventListener('scroll', this.handleScroll)
+      //     this.handleScroll()
+      //   } else {
+      //     console.error('Scroll container not found')
+      //   }
+      // })
     }
+    // removeScrollListener() {
+    //   if (this.scrollContainer) {
+    //     this.scrollContainer.removeEventListener('scroll', this.handleScroll)
+    //     this.scrollContainer = null
+    //   }
+    //   if (this.scrollTimeout) {
+    //     clearTimeout(this.scrollTimeout)
+    //   }
+    // }
   },
   mounted() {
     this.fetchLessons()
@@ -112,6 +119,36 @@ export default {
 
 <template>
   <div ref="listContainer" class="lesson-list-container">
+    <div class="filter-container">
+      <el-form :inline="true" :model="filterQuery" class="filter-form">
+        <el-form-item label="课程名称">
+          <el-input
+            v-model="filterQuery.name"
+            placeholder="请输入课程名称"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item label="课程类型">
+          <el-input
+            v-model="filterQuery.type"
+            placeholder="请输入课程类型"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item label="单节时长">
+          <el-input
+            v-model="filterQuery.duration"
+            placeholder="请输入单节时长"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleFilter">筛选</el-button>
+          <el-button @click="resetFilter">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+
     <div class="lesson-list">
       <div class="lesson-grid">
         <el-card
@@ -140,6 +177,19 @@ export default {
             <p v-if="lesson.updateTime" class="update-time">更新时间：{{ lesson.updateTime }}</p>
           </div>
         </el-card>
+      </div>
+
+      <div class="pagination-container">
+        <el-pagination
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="filterQuery.page"
+          :page-sizes="[8, 16, 24, 32]"
+          :page-size="filterQuery.pageSize"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+        >
+        </el-pagination>
       </div>
 
       <div v-if="loading" class="loading">
@@ -250,5 +300,30 @@ export default {
   text-align: center;
   padding: 20px;
   color: #999;
+}
+
+.filter-container {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+
+  .filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+}
+
+.pagination-container {
+  margin-top: 20px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

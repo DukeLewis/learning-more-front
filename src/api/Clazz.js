@@ -29,5 +29,12 @@ export const Clazz = {
       method: 'put',
       data: data
     })
+  },
+  listClassOverviewPage(params) {
+    return request({
+      url: url.Clazz.listClassOverviewPage,
+      method: 'get',
+      params: params
+    })
   }
 }

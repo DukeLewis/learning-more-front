@@ -17,6 +17,17 @@ export const WeeklyPlan = {
     })
   },
   deleteWeeklyPlan(params) {
-    return request({})
+    return request({
+      url: url.WeeklyPlan.deleteWeeklyPlan,
+      method: 'delete',
+      params
+    })
+  },
+  getWeeklyPlanDetail(params) {
+    return request({
+      url: url.WeeklyPlan.getWeeklyPlanDetail,
+      method: 'get',
+      params
+    })
   }
 }

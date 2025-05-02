@@ -95,6 +95,32 @@ export default {
     handleCurrentChange(val) {
       this.page.current = val
       this.fetchPlanList()
+    },
+    // 查看周计划详情
+    handleView(row) {
+      this.$router.push(`/weeklyPlan/${row.id}`)
+    },
+    // 编辑周计划
+    handleEdit(row) {
+      // TODO: 实现编辑逻辑
+      console.log('编辑周计划:', row)
+    },
+    // 删除周计划
+    handleDelete(row) {
+      this.$confirm('确认删除该周计划吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        WeeklyPlan.deleteWeeklyPlan({ id: row.id })
+          .then(() => {
+            this.$message.success('删除成功')
+            this.fetchPlanList()
+          })
+          .catch(error => {
+            this.$message.error('删除失败：' + error.message)
+          })
+      }).catch(() => {})
     }
   }
 }
@@ -184,6 +210,41 @@ export default {
           {{ scope.row.updatedTime }}
         </template>
       </el-table-column>
+      <el-table-column
+        label="操作"
+        width="240"
+        fixed="right"
+        align="center"
+      >
+        <template slot-scope="scope">
+          <div class="operation-buttons">
+            <el-button
+              type="text"
+              class="view-btn"
+              @click="handleView(scope.row)"
+            >
+              <i class="el-icon-view"></i>
+              <span>查看</span>
+            </el-button>
+            <el-button
+              type="text"
+              class="edit-btn"
+              @click="handleEdit(scope.row)"
+            >
+              <i class="el-icon-edit"></i>
+              <span>编辑</span>
+            </el-button>
+            <el-button
+              type="text"
+              class="delete-btn"
+              @click="handleDelete(scope.row)"
+            >
+              <i class="el-icon-delete"></i>
+              <span>删除</span>
+            </el-button>
+          </div>
+        </template>
+      </el-table-column>
     </el-table>
 
     <!-- 分页 -->
@@ -227,6 +288,61 @@ export default {
     margin-top: 20px;
     display: flex;
     justify-content: flex-end;
+  }
+}
+
+.operation-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+
+  .el-button {
+    padding: 6px 12px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.3s ease;
+
+    i {
+      font-size: 14px;
+    }
+
+    span {
+      font-size: 13px;
+    }
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+  }
+
+  .view-btn {
+    color: #409EFF;
+    background-color: rgba(64, 158, 255, 0.1);
+
+    &:hover {
+      background-color: rgba(64, 158, 255, 0.2);
+    }
+  }
+
+  .edit-btn {
+    color: #E6A23C;
+    background-color: rgba(230, 162, 60, 0.1);
+
+    &:hover {
+      background-color: rgba(230, 162, 60, 0.2);
+    }
+  }
+
+  .delete-btn {
+    color: #F56C6C;
+    background-color: rgba(245, 108, 108, 0.1);
+
+    &:hover {
+      background-color: rgba(245, 108, 108, 0.2);
+    }
   }
 }
 </style>

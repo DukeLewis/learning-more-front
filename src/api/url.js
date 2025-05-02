@@ -1,4 +1,3 @@
-
 export const url = {
   serverlessApiUrl: 'http://localhost:8090',
   User: {
@@ -9,7 +8,8 @@ export const url = {
     listClassOverview: '/api/class/listClassOverview',
     getClassInfo: '/api/class/getClassInfo',
     deleteClass: '/api/class/deleteClass',
-    updateClassInfo: '/api/class/updateClassInfo'
+    updateClassInfo: '/api/class/updateClassInfo',
+    listClassOverviewPage: '/api/class/listClassOverviewPage'
   },
   Student: {
     listStudentOverview: '/api/student/listStudentOverview',
@@ -43,6 +43,7 @@ export const url = {
     listWeeklyPlanPage: '/api/weeklyPlan/listWeeklyPlanPage',
     createWeeklyPlan: '/api/weeklyPlan/createWeeklyPlan',
     deleteWeeklyPlan: '/api/weeklyPlan/deleteWeeklyPlan',
-    updateWeeklyPlan: '/api/weeklyPlan/updateWeeklyPlan'
+    updateWeeklyPlan: '/api/weeklyPlan/updateWeeklyPlan',
+    getWeeklyPlanDetail: '/api/weeklyPlan/getWeeklyPlanDetail'
   }
 }

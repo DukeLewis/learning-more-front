@@ -95,6 +95,11 @@ export default {
       <div class="info-grid">
         <div class="info-item">
           <i class="el-icon-time"></i>
+          <span class="label">课程类型：</span>
+          <span class="value">{{ course.type }}</span>
+        </div>
+        <div class="info-item">
+          <i class="el-icon-time"></i>
           <span class="label">总时长：</span>
           <span class="value">{{ course.duration }}</span>
         </div>

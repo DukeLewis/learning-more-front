@@ -9,6 +9,37 @@
         ></el-image>
       </el-header>
       <el-main style="height: 50%;">
+        <!-- 筛选条件 -->
+        <div class="filter-container">
+          <el-form :inline="true" :model="filterQuery" class="filter-form">
+            <el-form-item label="班级名称">
+              <el-input
+                v-model="filterQuery.name"
+                placeholder="请输入班级名称"
+                clearable
+              />
+            </el-form-item>
+            <el-form-item label="学校名称">
+              <el-input
+                v-model="filterQuery.school"
+                placeholder="请输入学校名称"
+                clearable
+              />
+            </el-form-item>
+            <el-form-item label="年级">
+              <el-input
+                v-model="filterQuery.grade"
+                placeholder="请输入年级"
+                clearable
+              />
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="handleFilter">筛选</el-button>
+              <el-button @click="resetFilter">重置</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+
         <div style="display: flex;gap: 12px;flex-wrap: wrap;width: 100%">
           <!--   班级列表   -->
           <el-card
@@ -135,6 +166,19 @@
           </el-card>
         </div>
       </el-main>
+      <!-- 分页组件 -->
+      <div class="pagination-container">
+        <el-pagination
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="filterQuery.page"
+          :page-sizes="[8, 16, 24, 32]"
+          :page-size="filterQuery.limit"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+        >
+        </el-pagination>
+      </div>
     </el-container>
   </div>
 </template>
@@ -147,6 +191,15 @@ export default {
   name: 'Home',
   data() {
     return {
+      // 筛选条件
+      filterQuery: {
+        page: 1,
+        limit: 8,
+        name: '',
+        school: '',
+        grade: ''
+      },
+      total: 0,
       // 班级信息概览列表
       classOverviewInfos: [],
       // 班级信息详情弹窗是否可见
@@ -171,6 +224,32 @@ export default {
     this.getClassOverViewInfos()
   },
   methods: {
+    // 处理筛选
+    handleFilter() {
+      this.filterQuery.page = 1
+      this.getClassOverViewInfos()
+    },
+    // 重置筛选条件
+    resetFilter() {
+      this.filterQuery = {
+        page: 1,
+        limit: 8,
+        className: '',
+        school: '',
+        grade: ''
+      }
+      this.getClassOverViewInfos()
+    },
+    // 处理每页条数变化
+    handleSizeChange(val) {
+      this.filterQuery.limit = val
+      this.getClassOverViewInfos()
+    },
+    // 处理页码变化
+    handleCurrentChange(val) {
+      this.filterQuery.page = val
+      this.getClassOverViewInfos()
+    },
     // 更新班级信息的回调
     verifyClassInfoUpdated() {
       if (this.needUpdatedClassInfo) {
@@ -207,8 +286,9 @@ export default {
     },
     // 获取班级信息概览列表
     getClassOverViewInfos() {
-      Clazz.listClassOverview().then(res => {
-        this.classOverviewInfos = res
+      Clazz.listClassOverviewPage(this.filterQuery).then(res => {
+        this.classOverviewInfos = res.data
+        this.total = res.total
       })
     },
     // 打开班级信息修改窗口的回调
@@ -269,5 +349,30 @@ export default {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+.filter-container {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+
+  .filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+}
+
+.pagination-container {
+  margin-top: 20px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

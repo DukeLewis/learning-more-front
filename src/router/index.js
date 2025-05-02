@@ -98,6 +98,11 @@ export const constantRoutes = [
         name: 'WeeklyPlan',
         component: () => import('@/views/week/index'),
         meta: { title: '周计划信息管理', icon: 'el-icon-s-grid' }
+      },
+      {
+        path: '/weeklyPlan/:id',
+        name: 'WeeklyPlanDetail',
+        component: () => import('@/views/week/WeeklyPlanDetail')
       }
     ]
   },
