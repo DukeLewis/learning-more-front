@@ -4,20 +4,7 @@
     <div class="header">
       <div class="title">
         <h1>{{ isEdit ? '编辑课程' : '创建课程' }}</h1>
-        <template v-if="hasBasicInfo">
-          <el-tooltip content="重新生成整个课程的目标和活动" placement="right">
-            <el-button
-              type="success"
-              icon="el-icon-magic-stick"
-              :loading="regenerating"
-              class="regenerate-btn"
-              @click="handleRegenerateAll"
-            >
-              AI 重新生成
-            </el-button>
-          </el-tooltip>
-        </template>
-        <template v-else>
+        <template v-if="activeStep === 0">
           <el-tooltip content="基于年龄和人数生成课程基本信息" placement="right">
             <el-button
               type="success"
@@ -232,14 +219,14 @@
 
               <el-form-item label="活动时长">
                 <el-input
-                  v-model="activity.duration"
+                  v-model="activity.activityDuration"
                   placeholder="例如：30分钟"
                 />
               </el-form-item>
 
               <el-form-item label="活动描述">
                 <el-input
-                  v-model="activity.description"
+                  v-model="activity.activityDescription"
                   type="textarea"
                   :rows="2"
                   placeholder="请输入活动描述"
@@ -336,7 +323,7 @@
               <!-- 所需材料 -->
               <el-form-item label="所需材料">
                 <el-tag
-                  v-for="(material, materialIndex) in activity.materialsNeeded"
+                  v-for="(material, materialIndex) in activity.activityMaterialsNeeded"
                   :key="materialIndex"
                   closable
                   class="material-tag"
@@ -410,8 +397,14 @@ export default {
       generateBasicInfoData: '',
       // 后端返回的课程目标数据（未解析）
       generateObjectiveData: '',
+      // 后端返回的课程活动数据（未解析）
+      generateActivityData: '',
       // 课程目标数量
       totalObjectiveNumber: -1,
+      // 活动数量
+      totalActivityNumber: -1,
+      // 活动步骤数量
+      // activityStepNumber: [],
       courseTypes: [
         { label: '语言类', value: 'LANGUAGE' },
         { label: '艺术类', value: 'ART' },
@@ -532,7 +525,9 @@ export default {
         const activities = courseData.activities
         activities.forEach((activity) => {
           activity.steps = JSON.parse(activity.steps)
-          activity.materialsNeeded = activity.materialsNeeded.split('、')
+          activity.activityDescription = activity.description
+          activity.activityDuration = activity.duration
+          activity.activityMaterialsNeeded = activity.materialsNeeded.split(/[,，]/)
         })
         this.activeStep = courseData.activeStep
         this.courseForm = {
@@ -689,6 +684,7 @@ export default {
     async handleGenerateObjectives() {
       try {
         this.generatingObjectives = true
+        this.courseForm.objectives = []
         const data = {
           courseId: this.$route.params.id
         }
@@ -724,6 +720,13 @@ export default {
               ...this.courseForm,
               objectives
             }
+            // 添加自动滚动
+            // this.$nextTick(() => {
+            //   const currentObjective = document.querySelector(`.objective-item:nth-child(${objectives.length})`)
+            //   if (currentObjective) {
+            //     currentObjective.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            //   }
+            // })
           }
         }
         createEventSource(url.Course.generateCourseObjectives, data, messageCallBack).then((res) => {
@@ -735,27 +738,138 @@ export default {
           })
           Course.createOrUpdateCourseSecond(this.courseForm.objectives).then((res) => {
             this.courseForm.objectives = res.data
-            console.log('保存成功')
+            Course.updateCourse({
+              id: this.$route.params.id,
+              activeStep: this.activeStep + 1
+            }).then(() => {
+              console.log('保存成功')
+            })
           })
         })
-        this.$message.success('课程目标生成成功')
       } catch (error) {
         this.$message.error('生成课程目标失败：' + error.message)
       } finally {
         this.generatingObjectives = false
       }
     },
+    checkActivityIsEmpty(activity) {
+      return !activity.activityName || !activity.activityDescription || !activity.activityDuration ||
+        !activity.activityMaterialsNeeded || !activity.steps || activity.steps.length === 0
+    },
     async handleGenerateActivities() {
-      // try {
-      //   this.generatingActivities = true
-      //   const response = await Course.generateActivities(this.$route.params.id)
-      //   this.courseForm.activities = response
-      //   this.$message.success('课程活动生成成功')
-      // } catch (error) {
-      //   this.$message.error('生成课程活动失败：' + error.message)
-      // } finally {
-      //   this.generatingActivities = false
-      // }
+      try {
+        this.generatingActivities = true
+        this.courseForm.activities = []
+        const data = {
+          courseId: this.$route.params.id
+        }
+        const messageCallBack = (message) => {
+          // 更新数据
+          this.generateActivityData += message.data
+          console.log('处理前：{}', this.generateActivityData)
+          this.generateActivityData = this.generateActivityData.replace(/\\{1,2}LINE\/\//g, '\n')
+          console.log('处理后：{}', this.generateActivityData)
+          // 解析数据
+          if (this.totalActivityNumber === -1) {
+            const parseData = assignProperties([
+              { sourceKey: 'totalactivitynumber', targetProp: 'totalActivityNumber' }
+            ], this.generateActivityData)
+            if (parseData.totalActivityNumber) {
+              this.totalActivityNumber = parseData.totalActivityNumber
+            }
+          } else {
+            const activityFiledArr = []
+            for (let i = 1; i <= this.totalActivityNumber; i++) {
+              activityFiledArr.push({ sourceKey: 'activity' + i + 'name', targetProp: 'activityName' + i })
+              activityFiledArr.push({ sourceKey: 'activity' + i + 'description', targetProp: 'activityDescription' + i })
+              activityFiledArr.push({ sourceKey: 'activity' + i + 'duration', targetProp: 'activityDuration' + i })
+              activityFiledArr.push({ sourceKey: 'activity' + i + 'materialsneeded', targetProp: 'activityMaterialsNeeded' + i })
+              activityFiledArr.push({ sourceKey: 'activity' + i + 'totalstepnumber', targetProp: 'totalStepNumber' + i })
+            }
+            let parseData = assignProperties(activityFiledArr, this.generateActivityData)
+            const activities = []
+            let activityNumber = 1
+            for (let i = 1; i <= this.totalActivityNumber; i++) {
+              activities.push({
+                activityName: parseData['activityName' + i] || '',
+                activityDescription: parseData['activityDescription' + i] || '',
+                activityDuration: parseData['activityDuration' + i] || '',
+                activityMaterialsNeeded: (parseData['activityMaterialsNeeded' + i] || '').split(/[,，]/),
+                totalStepNumber: parseData['totalStepNumber' + i] || -1,
+                steps: []
+              })
+              activityNumber = this.checkActivityIsEmpty(activities[i - 1]) ? activityNumber : i
+              for (let j = 1; j <= activities[i - 1].totalStepNumber; j++) {
+                activityFiledArr.push({ sourceKey: 'activity' + i + 'step' + j + 'title', targetProp: 'activity' + i + 'StepTitle' + j })
+                activityFiledArr.push({ sourceKey: 'activity' + i + 'step' + j + 'duration', targetProp: 'activity' + i + 'StepDuration' + j })
+                activityFiledArr.push({ sourceKey: 'activity' + i + 'step' + j + 'description', targetProp: 'activity' + i + 'StepDescription' + j })
+                activityFiledArr.push({ sourceKey: 'activity' + i + 'step' + j + 'tips', targetProp: 'activity' + i + 'StepTips' + j })
+                activityFiledArr.push({ sourceKey: 'activity' + i + 'step' + j + 'keyPoints', targetProp: 'activity' + i + 'StepKeyPoints' + j })
+              }
+            }
+            parseData = assignProperties(activityFiledArr, this.generateActivityData)
+            for (let i = 1; i <= this.totalActivityNumber; i++) {
+              for (let j = 1; j <= activities[i - 1].totalStepNumber; j++) {
+                activities[i - 1].steps.push({
+                  title: parseData['activity' + i + 'StepTitle' + j] || '',
+                  duration: parseData['activity' + i + 'StepDuration' + j] || '',
+                  description: parseData['activity' + i + 'StepDescription' + j] || '',
+                  tips: parseData['activity' + i + 'StepTips' + j] || '',
+                  keyPoints: (parseData['activity' + i + 'StepKeyPoints' + j] || '').split(/[,，]/)
+                })
+              }
+            }
+            this.courseForm = {
+              ...this.courseForm,
+              activities
+            }
+            // 添加自动滚动
+            // this.$nextTick(() => {
+            //   const currentActivity = document.querySelector(`.activity-item:nth-child(${activityNumber})`)
+            //   if (currentActivity) {
+            //     currentActivity.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            //   }
+            // })
+          }
+        }
+        createEventSource(url.Course.generateCourseActivities, data, messageCallBack).then((res) => {
+          this.$message.success('课程活动生成成功')
+          this.totalActivityNumber = -1
+          this.generateActivityData = ''
+          console.log(res)
+          this.courseForm.activities.forEach((activity) => {
+            activity.courseId = this.$route.params.id
+            activity.materialsNeeded = activity.activityMaterialsNeeded.join(',')
+            activity.description = activity.activityDescription
+            activity.duration = activity.activityDuration
+            activity.steps = JSON.stringify(activity.steps)
+          })
+          Course.createOrUpdateCourseThird(this.courseForm.activities).then((res) => {
+            this.courseForm.activities = res.data.map((activity) => {
+              const { steps, activityName, description, duration, materialsNeeded } = activity
+              return {
+                activityName,
+                activityDescription: description,
+                activityDuration: duration,
+                activityMaterialsNeeded: materialsNeeded.split(/[,，]/),
+                totalStepNumber: steps.length,
+                steps: JSON.parse(steps)
+              }
+            })
+          }).then(() => {
+            Course.updateCourse({
+              id: this.$route.params.id,
+              activeStep: this.activeStep
+            }).then(() => {
+              console.log('保存成功')
+            })
+          })
+        })
+      } catch (error) {
+        this.$message.error('生成课程活动那个失败：' + error.message)
+      } finally {
+        this.generatingActivities = false
+      }
     },
     handleGenerateBasicInfo() {
       if (!this.courseForm.ageGroup || !this.courseForm.maxStudents || !this.courseForm.type) {

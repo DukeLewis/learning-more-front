@@ -58,7 +58,7 @@ export default {
         }
         this.course?.activities?.forEach((activity) => {
           activity.steps = JSON.parse(activity.steps)
-          activity.materialsNeeded = activity.materialsNeeded.split('、')
+          activity.materialsNeeded = activity.materialsNeeded.split(',')
         })
       } catch (error) {
         this.$message.error('获取课程详情失败：' + error.message)

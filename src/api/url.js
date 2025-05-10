@@ -31,7 +31,9 @@ export const url = {
     createCourseFirst: '/api/course/createCourseFirst',
     updateCourseFirst: '/api/course/updateCourseFirst',
     generateCourseObjectives: '/api/course/generateCourseObjectives',
-    createOrUpdateCourseSecond: '/api/course/createOrUpdateCourseSecond'
+    createOrUpdateCourseSecond: '/api/course/createOrUpdateCourseSecond',
+    createOrUpdateCourseThird: '/api/course/createOrUpdateCourseThird',
+    generateCourseActivities: '/api/course/generateCourseActivities'
   },
   School: {
     listSchoolOverviewPage: '/api/school/listSchoolOverviewPage',

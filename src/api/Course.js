@@ -57,5 +57,12 @@ export const Course = {
       method: 'post',
       data: data
     })
+  },
+  createOrUpdateCourseThird(data) {
+    return request({
+      url: url.Course.createOrUpdateCourseThird,
+      method: 'post',
+      data: data
+    })
   }
 }
